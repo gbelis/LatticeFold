@@ -15,5 +15,5 @@ This project simulates the folding process of proteins on a 2D lattice using a M
 
 
 ## Bibliography
-[A replica exchange Monte Carlo algorithm for protein folding in the HP model](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-8-342)
-[Protein Folding Prediction in a Cubic Lattice in Hydrophobic-Polar Model](https://www.liebertpub.com/doi/full/10.1089/cmb.2016.0181)
+- [A replica exchange Monte Carlo algorithm for protein folding in the HP model](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-8-342)
+- [Protein Folding Prediction in a Cubic Lattice in Hydrophobic-Polar Model](https://www.liebertpub.com/doi/full/10.1089/cmb.2016.0181)
