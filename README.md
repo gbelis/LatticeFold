@@ -112,7 +112,7 @@ This figure demonstrates the gradual folding process, where individual residues 
 ![protein_folding_rot](https://github.com/gbelis/LatticeFold/blob/main/visualisations/protein_folding_rot.gif)  
 This figure illustrates larger-scale conformational changes facilitated by chain rotations, enabling the chain to explore distant regions of the conformational space.
 
-*Note: For rendering efficiency, only 1 in every 5 states is shown in the visualizations.*
+*Note: For rendering efficiency, only 1 in every 5 states is shown in the visualizations. The gifs do not repeat automatically so the page may need to be refreshed in order for them to play.*
 
 ---
 
