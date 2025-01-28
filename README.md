@@ -116,22 +116,6 @@ This figure illustrates larger-scale conformational changes facilitated by chain
 
 ---
 
-### Methodological Justifications
-
-1. **HP Model**:  
-   While highly simplified, the HP model effectively captures the essence of protein folding, where hydrophobic interactions dominate. It provides a computationally efficient framework for exploring folding dynamics.
-
-2. **2D Lattice**:  
-   Restricting the simulation to a 2D lattice reduces computational complexity, allowing for the study of folding mechanisms without the overhead of 3D modeling.
-
-3. **Monte Carlo Sampling**:  
-   Monte Carlo methods are ideal for sampling vast conformational spaces, ensuring diverse configurations are explored.
-
-4. **Simulated Annealing**:  
-   This technique mimics the natural folding process by gradually lowering the "temperature" of the system, focusing on lower-energy states while avoiding local minima.
-
----
-
 ### Bibliography
 1. [A replica exchange Monte Carlo algorithm for protein folding in the HP model](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-8-342)  
    This paper discusses advanced Monte Carlo algorithms and their application to HP models, offering insights into efficient sampling techniques.
