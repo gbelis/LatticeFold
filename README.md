@@ -37,7 +37,7 @@ The simulation explores conformational space by generating moves within the **lo
    This move is applicable when a residue is part of a U-shaped bend in the chain. The crankshaft move involves a 180° rotation of the U-shaped structure, provided the new positions are unoccupied. This move allows the chain to explore compact configurations efficiently.
 
 4. **Chain Rotation**:  
-   The chain can be rotated at any internal residue, where the rotation pivots the structure by \( \pm\frac{\pi}{2} \) or \( \pm\pi \). The rotation must maintain the chain's connectivity and prevent steric clashes.
+   The chain can be rotated at any internal residue, where the rotation pivots the structure by $\pm\frac{\pi}{2}$ or $\pm\pi$. The rotation must maintain the chain's connectivity and prevent steric clashes.
 
 #### Move Acceptance Criteria:
 - **Steric Clash**: No two residues can occupy the same lattice position.
