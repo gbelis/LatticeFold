@@ -64,9 +64,11 @@ The Monte Carlo simulation is a stochastic approach to exploring the conformatio
 
 #### Metropolis Criterion:
 A move is accepted with the probability:
-![Equation]([https://latex.codecogs.com/svg.latex?P_{\text{accept}}%20=%20\begin{cases}%201%20&%20\text{if%20}%20\Delta%20E%20\leq%200%20\\exp\left(-\frac{\Delta%20E}{k_BT}\right)%20&%20\text{if%20}%20\Delta%20E%20>%200\end{cases}](https://latex.codecogs.com/svg.image?P_{\text{accept}}=\begin{cases}1&\text{if}\Delta&space;E\leq&space;0\\\exp\left(-\frac{\Delta&space;E}{k_BT}\right)&\text{if}\Delta&space;E>0\end{cases}))
+
+![Equation](https://latex.codecogs.com/svg.image?\color{white}P_{\text{accept}}=\begin{cases}1&\text{if}\Delta&space;E\leq&space;0\\\exp\left(-\frac{\Delta&space;E}{T}\right)&\text{if}\Delta&space;E>0\end{cases})
+
 Where:
-- $\Delta E$ is the change in energy caused by the proposed move (\( E_{\text{new}} - E_{\text{current}} \)).
+- $\Delta E$ is the change in energy caused by the proposed move $E_{\text{new}} - E_{\text{current}}$.
 - $T$ is the system's temperature at the current iteration.
 
 #### Steps in Monte Carlo Move Selection:
@@ -82,32 +84,21 @@ Where:
    The energy of the new conformation is computed, and the change in energy (\( \Delta E \)) is determined.
 
 4. **Acceptance Decision**:  
-   - If \( \Delta E \leq 0 \), the move is always accepted, as it leads to a lower-energy state.
-   - If \( \Delta E > 0 \), the move is accepted with a probability proportional to \( \exp(-\Delta E / k_BT) \), allowing uphill moves to escape local minima.
+   - If $\Delta E \leq 0$, the move is always accepted, as it leads to a lower-energy state.
+   - If $\Delta E > 0$, the move is accepted with a probability proportional to $\exp(-\Delta E / T)$, allowing uphill moves to escape local minima.
 
 5. **Update State**:  
    If the move is accepted, the conformation is updated to the new state. Otherwise, the system retains its current state.
 
-#### Importance of Temperature (\( T \)):
-The temperature parameter (\( T \)) controls the balance between exploration and exploitation:
+#### Importance of Temperature $T$:
+The temperature parameter $T$ controls the balance between exploration and exploitation:
 - At **high temperatures**, the system is more likely to accept uphill moves, enabling broad exploration of the conformational space.
 - At **low temperatures**, the system predominantly accepts downhill moves, focusing on refining low-energy states.
 
 #### Simulated Annealing:
-The simulation uses a cooling schedule to gradually lower the temperature (\( T \)), reducing the acceptance of high-energy states over time. This process mimics the natural cooling process during protein folding, allowing the simulation to converge to near-native conformations.
+The simulation uses a cooling schedule to gradually lower the temperature $T$, reducing the acceptance of high-energy states over time. This process mimics the natural cooling process during protein folding, allowing the simulation to converge to near-native conformations.
 
 This Monte Carlo move selection process, combined with the energy model, enables the simulation to explore a vast number of potential folding pathways efficiently and identify low-energy configurations representative of the protein's folded state.
-
----
-
-Let me know if you'd like to expand or refine this section further!
-
-#### Total Energy:
-\[
-E = -\sum \text{(H-H interactions)}
-\]
-
-The energy calculation captures the essential physics of protein folding: hydrophobic residues seek to minimize their exposure to the polar environment by clustering together, forming stable, low-energy states. Simulated annealing is used to guide the simulation toward these states by balancing exploration (high temperatures) and exploitation (low temperatures).
 
 ---
 
