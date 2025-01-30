@@ -9,32 +9,68 @@ GRID_SIZE = 20  # Size of the lattice grid
 
 # Utils
 rotation_matrix = lambda theta: (np.array([[np.cos(theta), -np.sin(theta)],[np.sin(theta), np.cos(theta)]]).astype(int))
+
+
 def rotation(shape,center=np.array([0,0]).reshape((2,1)),theta=0):
+    """
+    Apply a 2D rotation to a shape around a specified center.
+
+    Parameters:
+        shape (np.ndarray): A 2D array representing the coordinates of the shape.
+        center (np.ndarray): A 2x1 array specifying the center of rotation.
+        theta (float): The angle of rotation in radians.
+
+    Returns:
+        np.ndarray: The rotated shape as a 2D array.
+    """
     return np.dot(rotation_matrix(theta),shape-center.reshape((2,1)))+center.reshape((2,1))
 
-def are_neighbors(p1, p2):
+def are_neighbors(p1, p2) -> bool:
     """
     Check if two points are neighbors on a 2D lattice.
+
+    Parameters:
+        p1 (tuple): Coordinates of the first point.
+        p2 (tuple): Coordinates of the second point.
+
+    Returns:
+        bool: True if the points are neighbors, False otherwise.
     """
     x1, y1 = p1
     x2, y2 = p2
     return abs(x1 - x2) + abs(y1 - y2) == 1
 
 def get_neighbors(position):
-    """Get the coordinates of all neighbors of a given position."""
+    """
+    Get the coordinates of all neighbors of a given position on a 2D lattice.
+
+    Parameters:
+        position (tuple): The (x, y) coordinates of the point.
+
+    Returns:
+        list of tuple: A list of tuples representing the neighboring positions.
+    """
     x, y = position
     return [(x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)]
 
-def sterical_clash(pos):
-    """Checks for sterical clash in a position"""
+def sterical_clash(pos) -> bool:
+    """
+    Check if there is a sterical clash in a given set of positions.
+
+    Parameters:
+        pos (np.ndarray): A 2D array of positions.
+
+    Returns:
+        bool: True if a sterical clash is detected, False otherwise.
+    """
     return not len(np.unique(pos, axis=0))==len(pos)
 
 def chain_connected(strucutre):
     """
-    Checks if a chain of points in a 2D lattice is connected.
+    Check if a chain of points in a 2D lattice is connected.
 
-    Args:
-        points (list of tuple): List of points representing the chain, where each point is a tuple (x, y).
+    Parameters:
+        structure (np.ndarray or list): Array/list of points representing the chain.
 
     Returns:
         bool: True if the chain is connected, False otherwise.
@@ -55,52 +91,76 @@ class Protein:
             self.structure=np.c_[np.ones(len(sequence),dtype=int),np.arange(len(sequence))]
         else: self.structure=initial_structure
 
+    
+    def get_moves(self, position, check=True, rules='all'):
+        """
+        Generate possible moves for a specific position in the current protein structure.
 
-    def get_moves(self, check=True, rule='small'):
-        moves=[]
-        if rule == 'rotation' or rule == 'both':
-            for i,pos in enumerate(self.structure):
-                if i>0:
-                    for theta in np.arange(1,4)/2*np.pi:
-                        move=self.structure.T.copy()
-                        move[:,i:]=rotation(move[:,i:], pos.reshape(2,1),theta)
+        Parameters:
+            position (int): The index of the residue to generate moves for.
+            check (bool): Whether to validate moves for chain connectivity and sterical clash.
+            rules (str or list(str)): The rules for generating moves (combination of: 'small', 'rotation', 'crankshaft', or 'all').
+
+        Returns:
+            list of np.ndarray: A list of possible moves as 2D numpy arrays.
+        """
+        moves = []
+
+        if 'rotation' in rules or rules == 'all':
+            if position > 0:
+                pos = self.structure[position]
+                for theta in np.arange(1, 4) / 2 * np.pi:
+                    move = self.structure.T.copy()
+                    move[:, position:] = rotation(move[:, position:], pos.reshape(2, 1), theta)
+                    if not check:
+                        moves.append(move.T)
+                    elif chain_connected(move.T) and not sterical_clash(move.T):
+                        moves.append(move.T)
+
+        if 'small' in rules or rules == 'all':
+            if position == 0 or position == len(self.structure) - 1:  # End points
+                neighbors = get_neighbors(self.structure[position])
+                for nb in neighbors:
+                    if not (nb == self.structure[position]).all():
+                        move = self.structure.copy()
+                        move[position] = nb
                         if not check:
-                            moves.append(move.T)
-                        elif chain_connected(move.T) and not sterical_clash(move.T):
-                            moves.append(move.T)
-                    
-        if rule == 'small' or rule == 'both':
-            for nb in get_neighbors(self.structure[1]):
-                if not (nb==self.structure[1]).all():
-                    move=self.structure.copy()
-                    move[0]=nb
+                            moves.append(move)
+                        elif chain_connected(move) and not sterical_clash(move):
+                            moves.append(move.copy())
+            elif 1 <= position < len(self.structure) - 1:  # Internal positions
+                move = self.structure.copy()
+                if np.abs(move[position - 1] - move[position + 1])[0] == 1:
+                    move[position] = move[position - 1] - move[position] + move[position + 1]
+                    if not check:
+                        moves.append(move)
+                    elif chain_connected(move) and not sterical_clash(move):
+                        moves.append(move)
+
+        if 'crankshaft' in rules or rules == 'all':
+            if 1 <= position < len(self.structure) - 2:  # Ensure valid crankshaft rotation range
+                move = self.structure.copy()
+                v1, v2 = move[position - 1], move[position + 2]
+                if np.linalg.norm(v1 - v2) == 2:  # Ensuring valid crankshaft rotation
+                    move[position], move[position + 1] = move[position + 1], move[position]  # Swap positions
                     if not check:
                         moves.append(move)
                     elif chain_connected(move) and not sterical_clash(move):
                         moves.append(move.copy())
 
-            for nb in get_neighbors(self.structure[-2]):
-                if not (nb==self.structure[-2]).all():
-                    move=self.structure.copy()
-                    move[-1]=nb
-                    if not check:
-                        moves.append(move)
-                    elif chain_connected(move) and not sterical_clash(move):
-                        moves.append(move.copy())
-
-            for i in range(1,len(self.structure)-1):
-                move=self.structure.copy()
-                if np.abs(move[i-1]-move[i+1])[0]==1:
-                    move[i]=move[i-1]-move[i]+move[i+1]
-                    if not check:
-                        moves.append(move)
-                    elif chain_connected(move) and not sterical_clash(move):
-                        moves.append(move)
-                    
         return moves
 
+
     def get_energy(self, structure=None):
-        """Calculate the total energy based on H-H contacts."""
+        """
+        Calculate the total energy of the protein structure based on H-H contacts.
+
+        Parameters:
+            structure (np.ndarray, optional): The structure for which to calculate energy. Defaults to the current structure.
+
+        Returns:
+            int: The total energy of the structure.
+        """
         energy = 0
         if structure is None:
             structure = self.structure  # Default to the current structure
@@ -118,18 +178,36 @@ class Protein:
 
                     
 
-    def fold(self, max_iter, temperature,cooling_rate,rule):
+    def fold(self, max_iter, temperature,cooling_rate,rules='all', output_energies=False):
+        """
+        Perform simulated annealing to fold the protein.
+
+        Parameters:
+            max_iter (int): Maximum number of iterations.
+            temperature (float): Initial temperature for annealing.
+            cooling_rate (float): Cooling rate to decrease temperature.
+            rule (str): The rule for generating moves ('small', 'rotation', or 'both').
+
+        Returns:
+            list of np.ndarray: A list of protein structures representing the folding process.
+        """
+        if output_energies:
+            energies=[]
         energy=self.get_energy()
         states=[self.structure.copy()]
         for i in range(max_iter):
-            for move in np.random.permutation(self.get_moves(rule=rule)):
+            for move in np.random.permutation(self.get_moves(rules=rules, position=np.random.choice(np.arange(self.structure.shape[0])))):
                 new_energy=self.get_energy(move)
-                if energy >= new_energy or np.random.rand() > np.exp(energy - new_energy) / max(temperature, 1e-8):
+                if energy >= new_energy or np.random.rand() < np.exp((energy - new_energy) / max(temperature, 1e-8)):
                     self.structure=move.copy()
-                    states.append(move.copy())   # this may need a .copy()
+                    states.append(move.copy())
                     energy=new_energy
+                    if output_energies:
+                        energies.append(energy)
                     break
             temperature*=cooling_rate
+        if output_energies:
+            return states, energies
         return states
     
                     
@@ -137,7 +215,17 @@ class Protein:
 
 # Visualisations
 def visualize_lattice(positions,sequence,ax=None):
-    """Visualize the lattice and the protein fold."""
+    """
+    Visualize the lattice and the protein fold.
+
+    Parameters:
+        positions (list of tuple): List of positions of the protein on the lattice.
+        sequence (str): The protein sequence.
+        ax (matplotlib.axes.Axes, optional): Axes to plot on. If None, a new figure and axes are created.
+
+    Returns:
+        tuple: A tuple containing the figure and axes objects.
+    """
     if ax is None:
         fig,ax=plt.subplots(1,1)
     x_coords = [pos[0] for pos in positions]
@@ -155,13 +243,18 @@ def visualize_lattice(positions,sequence,ax=None):
 
 def folding_gif(folding_steps, sequence, output_file="protein_folding.gif", grid_size=None, cell_colors=None, interval=200):
     """
-    Saves the lattice protein folding steps as a GIF using matplotlib's ArtistAnimation.
+    Save the protein folding process as a GIF.
 
     Parameters:
-        folding_steps (list of np.ndarray): List of 2D numpy arrays representing intermediate folding states.
-        sequence (list of str): Sequence of labels corresponding to each point in the folding steps.
+        folding_steps (list of np.ndarray): List of intermediate folding states.
+        sequence (list of str): The protein sequence.
         output_file (str): Filepath to save the GIF.
+        grid_size (tuple, optional): Size of the grid. Defaults to None.
+        cell_colors (list, optional): Colors for the cells. Defaults to None.
         interval (int): Time between frames in milliseconds.
+
+    Returns:
+        None
     """
     # Initialize the figure
     fig, ax = plt.subplots()
@@ -198,3 +291,24 @@ def folding_gif(folding_steps, sequence, output_file="protein_folding.gif", grid
 
     # Save the animation as a GIF
     anim.save(output_file, writer="pillow")
+
+
+
+
+import re
+
+def expand_notation(sequence: str) -> str:
+    """This is only used to process a format of sequence input from a benchmark dataset
+
+    Args:
+        sequence (str): for example: (HP)2PH2PHP2HPH2P2HPH
+
+    Returns:
+        str: sequence containing only H and Ps
+    """
+    while '(' in sequence:
+        sequence = re.sub(r'\(([^()]+)\)(\d*)', lambda m: m.group(1) * int(m.group(2) or 1), sequence)
+    sequence = re.sub(r'H(\d+)', lambda m: 'H' * int(m.group(1)), sequence)
+    sequence = re.sub(r'P(\d+)', lambda m: 'P' * int(m.group(1)), sequence)
+    return sequence
+
