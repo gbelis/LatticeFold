@@ -88,7 +88,7 @@ class Protein:
     def __init__(self,sequence,initial_structure=None) -> None:
         self.sequence=sequence
         if initial_structure is None:
-            self.structure=np.c_[np.ones(len(sequence),dtype=int),np.arange(len(sequence))]
+            self.structure=generate_connected_points(len(sequence))
         else: self.structure=initial_structure
 
     
@@ -312,3 +312,29 @@ def expand_notation(sequence: str) -> str:
     sequence = re.sub(r'P(\d+)', lambda m: 'P' * int(m.group(1)), sequence)
     return sequence
 
+
+
+def generate_connected_points(n, start=(0, 0)):
+    """
+    Generates a random sequence of connected points in 2D without repeating points,
+    using backtracking to avoid getting stuck.
+    
+    :param n: Number of points in the sequence
+    :return: List of (x, y) coordinates
+    """
+    sequence = [start]
+    
+    while len(sequence) < n:
+        last_x, last_y = sequence[-1]
+        moves = [(1, 0), (-1, 0), (0, 1), (0, -1)]
+        
+        for dx, dy in np.random.permutation(moves):
+            new_point = (last_x + dx, last_y + dy)
+            if new_point not in sequence:
+                sequence.append(new_point)
+                break
+        else:
+            # No valid moves found, backtrack
+            sequence.pop()
+    
+    return sequence
