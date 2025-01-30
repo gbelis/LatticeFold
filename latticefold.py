@@ -169,8 +169,8 @@ class Protein:
             if self.sequence[i] == 'H':  # Only calculate for H residues
                 neighbors = get_neighbors(pos)
                 for neighbor in neighbors:
-                    if any((neighbor == structure).all(axis=1)):  # Check if neighbor exists in structure
-                        j = np.where((structure == neighbor).all(axis=1))[0][0]  # Get index of the neighbor
+                    if np.equal(structure,np.array(neighbor)).all(axis=1).any():
+                        j = np.where(np.equal(structure,np.array(neighbor)).all(axis=1))[0][0]
                         if i != j - 1 and i != j + 1:  # Avoid counting sequential neighbors
                             if self.sequence[j] == 'H':  # Check if the neighbor is also H
                                 energy += ENERGY_HH
@@ -236,8 +236,6 @@ def visualize_lattice(positions,sequence,ax=None):
         ax.text(pos[0], pos[1], sequence[i], color="red", fontsize=12, ha='center', va='center')
     ax.set_title("Protein Folding on a 2D Lattice")
     ax.grid(True)
-    #ax.set_xlim(-15, 15)  # Fix x-axis range
-    #ax.set_ylim(-15, 15)
     return fig, ax
 
 
@@ -337,4 +335,4 @@ def generate_connected_points(n, start=(0, 0)):
             # No valid moves found, backtrack
             sequence.pop()
     
-    return sequence
+    return np.array(sequence)
